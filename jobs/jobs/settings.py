@@ -19,7 +19,9 @@ NEWSPIDER_MODULE = 'jobs.spiders'
 #USER_AGENT = 'jobs (+http://www.yourdomain.com)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
+
+DUPEFILTER_CLASS = 'jobs.dupefilters.URLBloomFilter'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
