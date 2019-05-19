@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
 import scrapy
+from scrapy.loader import ItemLoader
+from scrapy.loader.processors import TakeFirst
+
+
+class YunqiItemLoader(ItemLoader):
+    default_output_processor = TakeFirst()
 
 
 class YunqiBookListItem(scrapy.Item):
