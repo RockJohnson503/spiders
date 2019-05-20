@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-import scrapy
+from scrapy_redis.spiders import RedisCrawlSpider
 from scrapy.linkextractors import LinkExtractor
-from scrapy.spiders import CrawlSpider, Rule
+from scrapy.spiders import Rule, CrawlSpider
 from novels.items import *
 from urllib import parse
 import requests, json
 
 
-class YunqiSpider(CrawlSpider):
+class YunqiSpider(RedisCrawlSpider):
     name = 'yunqi'
     allowed_domains = ['yunqi.qq.com']
-    start_urls = ['http://yunqi.qq.com/bk']
+    redis_key = 'yunqi:start_urls'
 
     rules = (
-        Rule(LinkExtractor(allow=r'yunqi.qq.com/bk/.*/.*', deny=r'yunqi.qq.com/bk/.*\.html$'), callback='parse_book_list', follow=True),
+        Rule(LinkExtractor(allow=r'yunqi.qq.com/bk/.*/.*', deny=(r'yunqi.qq.com/bk/.*\.html$', r'.*book.bookUrl.*')), callback='parse_book_list', follow=True),
     )
 
     def parse_book_list(self, response):
@@ -62,9 +62,11 @@ class YunqiSpider(CrawlSpider):
         item_loader.add_css('novel_all_comm', '#novelInfo tr:nth-child(2) td:nth-child(3)::text')
         item_loader.add_css('novel_month_comm', '#novelInfo tr:nth-child(3) td:nth-child(3)::text')
         item_loader.add_css('novel_week_comm', '#novelInfo tr:nth-child(4) td:nth-child(3)::text')
-        novel_id = response.css('.auther::text').get().split('：')[1]
-        json_data = requests.get('http://yunqi.qq.com/novelcomment/index.html?bid=%s' % novel_id,
-                                   headers={'Referer': response.url}).text
-        data = json.loads(json_data)
-        item_loader.add_value('novel_comment_num', data['data']['commentNum'])
-        yield item_loader.load_item()
+        novel_id = response.css('.auther::text').get()
+        if novel_id:
+            novel_id = novel_id.split('：')[1]
+            json_data = requests.get('http://yunqi.qq.com/novelcomment/index.html?bid=%s' % novel_id,
+                                       headers={'Referer': response.url}).text
+            data = json.loads(json_data)
+            item_loader.add_value('novel_comment_num', data['data']['commentNum'])
+            yield item_loader.load_item()
