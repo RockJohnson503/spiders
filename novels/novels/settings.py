@@ -17,6 +17,11 @@ NEWSPIDER_MODULE = 'novels.spiders'
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
+LOG_LEVEL = 'INFO'
+
+TELNETCONSOLE_USERNAME = 'root'
+TELNETCONSOLE_PASSWORD = '123456'
+
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -61,7 +66,8 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'novels.pipelines.YunQicrawlPipeline': 300,
+    'scrapy_redis.pipelines.RedisPipeline': 100,
+    'novels.pipelines.YunQicrawlPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -102,6 +108,7 @@ REPLICASET = 'repset'
 DOWNLOAD_DELAY = 0.5
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 3
+AUTOTHROTTLE_MAX_DELAY = 10
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENTS = [
