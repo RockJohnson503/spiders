@@ -47,7 +47,8 @@ class YunqiSpider(RedisCrawlSpider):
         novel_link = book_item.get('novel_link')
         novel_id = book_item.get('novel_id')
         yield book_item
-        yield response.follow(novel_link, callback=self.parse_book_detail, meta={'novel_id': novel_id})
+        if novel_link:
+            yield response.follow(novel_link, callback=self.parse_book_detail, meta={'novel_id': novel_id})
 
     def parse_book_detail(self, response):
         item_loader = YunqiItemLoader(item=YunqiBookDetailItem(), response=response)
