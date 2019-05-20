@@ -26,7 +26,8 @@ class YunQicrawlPipeline(object):
 
     def process_item(self, item, spider):
         if isinstance(item, YunqiBookListItem):
-            self.db.book_info.insert(dict(item))
+            if self.db.book_info.count_documents({'novel_id': item.get('novel_id')}) == 0:
+                self.db.book_info.insert(dict(item))
         else:
             self.db.book_detail.insert(dict(item))
         return item
