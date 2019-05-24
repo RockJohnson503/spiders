@@ -23,7 +23,10 @@ TELNETCONSOLE_USERNAME = 'root'
 TELNETCONSOLE_PASSWORD = '123456'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-#CONCURRENT_REQUESTS = 32
+CONCURRENT_REQUESTS = 256
+CONCURRENT_RANDOMIP = 32
+GET_IP_PAGE_SIZE = 5
+DOWNLOAD_TIMEOUT = 10
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -54,7 +57,8 @@ TELNETCONSOLE_PASSWORD = '123456'
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
-   'novels.middlewares.RandomUserAgent': 410,
+   'novels.middlewares.RandomIpProxyMiddleware': 400,
+   'novels.middlewares.RandomUserAgentMiddleware': 401,
 }
 
 # Enable or disable extensions
@@ -67,7 +71,7 @@ DOWNLOADER_MIDDLEWARES = {
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
     'scrapy_redis.pipelines.RedisPipeline': 100,
-    'novels.pipelines.YunQicrawlPipeline': 300,
+    # 'novels.pipelines.YunQicrawlPipeline': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -94,9 +98,8 @@ ITEM_PIPELINES = {
 # 分布式配置
 SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
 SCHEDULER_PERSIST = True
-DUPEFILTER_CLASS = 'scrapy_redis.dupefilter.RFPDupeFilter'
-REDIS_HOST = '127.0.0.1'
-REDIS_PORT = 6379
+DUPEFILTER_CLASS = 'novels.dupefilters.URLBloomFilter'
+REDIS_URL = 'redis://localhost:6379'
 
 # 数据库连接
 MONGO_URI = 'mongodb://127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019'
@@ -105,10 +108,11 @@ REPLICASET = 'repset'
 
 # 反爬虫大套餐
 # 自动限速套餐
-DOWNLOAD_DELAY = 0.5
+DOWNLOAD_DELAY = 0.1
 AUTOTHROTTLE_ENABLED = True
-AUTOTHROTTLE_START_DELAY = 3
-AUTOTHROTTLE_MAX_DELAY = 10
+AUTOTHROTTLE_START_DELAY = 0.1
+AUTOTHROTTLE_MAX_DELAY = 1
+COOKIES_ENABLED = False
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENTS = [
