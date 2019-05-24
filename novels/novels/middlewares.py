@@ -4,7 +4,7 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+from randomip import randomip
 from scrapy import signals
 import random
 
@@ -104,13 +104,41 @@ class NovelsDownloaderMiddleware(object):
         spider.logger.info('Spider opened: %s' % spider.name)
 
 
-class RandomUserAgent(object):
+class RandomUserAgentMiddleware:
     def __init__(self, agents):
         self.agents = agents
 
     @classmethod
     def from_crawler(cls, crawler):
-        return cls(crawler.settings.getlist('USER_AGENTS'))
+        agents = crawler.settings.getlist('USER_AGENTS')
+        return cls(agents)
 
     def process_request(self, request, spider):
         request.headers.setdefault('User-Agent', random.choice(self.agents))
+
+
+class RandomIpProxyMiddleware:
+    def __init__(self, agents, delay, page_size, concurrent, crawler):
+        self.agents = agents
+        self.delay = delay
+        self.page_size = page_size
+        self.concurrent = concurrent
+        cs = crawler.signals
+        cs.connect(self.spider_opened, signal=signals.spider_opened)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        agents = crawler.settings.getlist('USER_AGENTS')
+        delay = crawler.settings.get('DOWNLOAD_DELAY')
+        page_size = crawler.settings.get('GET_IP_PAGE_SIZE')
+        concurrent = crawler.settings.get('CONCURRENT_RANDOMIP')
+        return cls(agents, delay, page_size, concurrent, crawler)
+
+    def spider_opened(self, spider):
+        headers = {'User-Agent': random.choice(self.agents)}
+        self.ips = randomip.KuaiIp(spider=spider, delay=self.delay, page_size=self.page_size, concurrent=self.concurrent, headers=headers)
+
+    def process_request(self, request, spider):
+        ip = self.ips.get_random_ip()
+        request.meta['proxy'] = ip
+        print(request, '使用了', ip)
