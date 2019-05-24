@@ -11,6 +11,7 @@ class YunqiSpider(RedisCrawlSpider):
     name = 'yunqi'
     allowed_domains = ['yunqi.qq.com']
     redis_key = 'yunqi:start_urls'
+    # start_urls = ['http://yunqi.qq.com/bk']
 
     rules = (
         Rule(LinkExtractor(allow=r'yunqi.qq.com/bk/.*/.*', deny=(r'yunqi.qq.com/bk/.*\.html$', r'.*book.bookUrl.*')), callback='parse_book_list', follow=True),
@@ -44,11 +45,11 @@ class YunqiSpider(RedisCrawlSpider):
             item_loader.add_value('novel_words', novel_words)
 
         book_item = item_loader.load_item()
-        novel_link = book_item.get('novel_link')
-        novel_id = book_item.get('novel_id')
+        # novel_link = book_item.get('novel_link')
+        # novel_id = book_item.get('novel_id')
         yield book_item
-        if novel_link:
-            yield response.follow(novel_link, callback=self.parse_book_detail, meta={'novel_id': novel_id})
+        # if novel_link:
+        #     yield response.follow(novel_link, callback=self.parse_book_detail, meta={'novel_id': novel_id})
 
     def parse_book_detail(self, response):
         item_loader = YunqiItemLoader(item=YunqiBookDetailItem(), response=response)
@@ -66,8 +67,10 @@ class YunqiSpider(RedisCrawlSpider):
         novel_id = response.css('.auther::text').get()
         if novel_id:
             novel_id = novel_id.split('：')[1]
+            headers = {'Referer': response.url, 'User-Agent': response.request.headers.get('User-Agent').decode()}
+            proxies = {'': ''}
             json_data = requests.get('http://yunqi.qq.com/novelcomment/index.html?bid=%s' % novel_id,
-                                       headers={'Referer': response.url}).text
+                                       headers=headers, proxies=proxies).text
             data = json.loads(json_data)
             item_loader.add_value('novel_comment_num', data['data']['commentNum'])
             yield item_loader.load_item()
