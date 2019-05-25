@@ -136,9 +136,7 @@ class RandomIpProxyMiddleware:
 
     def spider_opened(self, spider):
         headers = {'User-Agent': random.choice(self.agents)}
-        self.ips = randomip.KuaiIp(spider=spider, delay=self.delay, page_size=self.page_size, concurrent=self.concurrent, headers=headers)
+        self.ips = randomip.XiciIp(spider=spider, delay=self.delay, page_size=self.page_size, concurrent=self.concurrent, headers=headers)
 
     def process_request(self, request, spider):
-        ip = self.ips.get_random_ip()
-        request.meta['proxy'] = ip
-        print(request, '使用了', ip)
+        request.meta['proxy'] = self.ips.get_random_ip()
