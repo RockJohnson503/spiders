@@ -26,7 +26,8 @@ TELNETCONSOLE_PASSWORD = '123456'
 CONCURRENT_REQUESTS = 256
 CONCURRENT_RANDOMIP = 32
 GET_IP_PAGE_SIZE = 5
-DOWNLOAD_TIMEOUT = 10
+DOWNLOAD_TIMEOUT = 5
+RETRY_ENABLED = False
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
@@ -70,7 +71,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'scrapy_redis.pipelines.RedisPipeline': 100,
+    # 'scrapy_redis.pipelines.RedisPipeline': 100,
     # 'novels.pipelines.YunQicrawlPipeline': 300,
 }
 
@@ -96,10 +97,10 @@ ITEM_PIPELINES = {
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 # 分布式配置
-SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
-SCHEDULER_PERSIST = True
-DUPEFILTER_CLASS = 'novels.dupefilters.URLBloomFilter'
-REDIS_URL = 'redis://localhost:6379'
+# SCHEDULER = 'scrapy_redis.scheduler.Scheduler'
+# SCHEDULER_PERSIST = True
+# DUPEFILTER_CLASS = 'novels.dupefilters.URLBloomFilter'
+# REDIS_URL = 'redis://localhost:6379'
 
 # 数据库连接
 MONGO_URI = 'mongodb://127.0.0.1:27017,127.0.0.1:27018,127.0.0.1:27019'

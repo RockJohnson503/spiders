@@ -5,8 +5,9 @@
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 from randomip import randomip
+from twisted.internet.error import TimeoutError, ConnectError
 from scrapy import signals
-import random
+import random, requests
 
 
 class NovelsSpiderMiddleware(object):
@@ -135,8 +136,25 @@ class RandomIpProxyMiddleware:
         return cls(agents, delay, page_size, concurrent, crawler)
 
     def spider_opened(self, spider):
-        headers = {'User-Agent': random.choice(self.agents)}
-        self.ips = randomip.XiciIp(spider=spider, delay=self.delay, page_size=self.page_size, concurrent=self.concurrent, headers=headers)
+        # headers = {'User-Agent': random.choice(self.agents)}
+        # self.ips = randomip.KuaiIp(spider=spider, delay=self.delay, page_size=self.page_size, concurrent=self.concurrent, headers=headers)
+        self._url = 'http://tpv.daxiangdaili.com/ip/?tid=559058343128731&num=1&protocol=http'
+        self.proxy = 'http://%s' % requests.get(self._url).text
 
     def process_request(self, request, spider):
-        request.meta['proxy'] = self.ips.get_random_ip()
+        # request.meta['proxy'] = self.ips.get_random_ip('https')
+        print('正在下载', self.proxy, request.url)
+        request.meta['proxy'] = self.proxy
+
+    def process_response(self, request, response, spider):
+        print('下载成功:', response.status, request.meta['proxy'])
+        return response
+
+    def process_exception(self, request, exception, spider):
+        print('下载失败:', request.meta['proxy'], type(exception), request.url)
+        if isinstance(exception, (TimeoutError, ConnectError)):
+            if request.meta['proxy'] == self.proxy:
+                self.proxy = 'http://%s' % requests.get(self._url).text
+                print('切换成功:', self.proxy)
+            request.priority = 1
+            return request

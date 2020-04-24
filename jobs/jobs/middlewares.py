@@ -5,7 +5,9 @@
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+from randomip import randomip
 from scrapy import signals
+import random
 
 
 class JobsSpiderMiddleware(object):
@@ -101,3 +103,21 @@ class JobsDownloaderMiddleware(object):
 
     def spider_opened(self, spider):
         spider.logger.info('Spider opened: %s' % spider.name)
+
+
+class RandomUserAgentMiddleware:
+    def __init__(self, agents, crawler):
+        self.agents = agents
+        crawler.signals.connect(self.handle_spider_opened, signals.spider_opened)
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(crawler.settings.getlist('USER_AGENTS'), crawler)
+
+    def handle_spider_opened(self, spider):
+        headers = {'User-Agent': random.choice(self.agents)}
+        self.get = randomip.XiciIp(spider=spider, page_size=5, headers=headers)
+
+    def process_request(self, request, spider):
+        request.headers.setdefault('User-Agent', random.choice(self.agents))
+        request.meta['proxy'] = self.get.get_random_ip('https')

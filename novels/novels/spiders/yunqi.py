@@ -7,11 +7,11 @@ from urllib import parse
 import requests, json
 
 
-class YunqiSpider(RedisCrawlSpider):
+class YunqiSpider(CrawlSpider):
     name = 'yunqi'
     allowed_domains = ['yunqi.qq.com']
-    redis_key = 'yunqi:start_urls'
-    # start_urls = ['http://yunqi.qq.com/bk']
+    # redis_key = 'yunqi:start_urls'
+    start_urls = ['http://yunqi.qq.com/bk']
 
     rules = (
         Rule(LinkExtractor(allow=r'yunqi.qq.com/bk/.*/.*', deny=(r'yunqi.qq.com/bk/.*\.html$', r'.*book.bookUrl.*')), callback='parse_book_list', follow=True),
